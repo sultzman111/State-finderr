@@ -36,7 +36,7 @@ const Nav = () => {
       <div className="flex items-center">
         <ul className="flex items-center gap-6 m-0 p-0 list-none">
           <li>
-            <Link to="/signin" className="text-[15px] font-medium text-gray-800 no-underline hover:text-blue-600 transition-colors duration-200">
+            <Link to="/Signin" className="text-[15px] font-medium text-gray-800 no-underline hover:text-blue-600 transition-colors duration-200">
               Sign In
             </Link>
           </li>
