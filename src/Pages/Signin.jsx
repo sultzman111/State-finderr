@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const Signin = () => {
+// 1. ADD onLogin HERE AS A COMPONENT PROP
+const Signin = ({ onLogin }) => {
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -40,8 +41,17 @@ const Signin = () => {
       }
       // ----------------------------------------------------------------
 
-      // SUCCESS: Route them directly to the dashboard page!
-      navigate('/dashboard');
+      // 2. ADD THIS LOGIC RIGHT HERE: Pass the matched account object into your state framework
+      if (onLogin) {
+        onLogin({
+          firstName: accountExists.firstName || "Kareem", // Pulls dynamically from signup records
+          lastName: accountExists.lastName || "Alameen",
+          email: accountExists.identifier
+        });
+      }
+
+      // SUCCESS: Route them directly to the portfolio grid view!
+      navigate('/services');
 
     } catch (err) {
       setError(err.message || "Something went wrong.");
@@ -173,7 +183,7 @@ const Signin = () => {
               disabled={loading}
               className="w-full mt-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold py-3 px-4 rounded-xl shadow-sm transition-all duration-150 active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
             >
-              {loading ? (
+              {loading ? ( 
                 <>
                   <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
