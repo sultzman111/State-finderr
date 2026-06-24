@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import Nav from './Component.jsx/Nav';
 import Footer from './Component.jsx/Footer'; 
 import Abt from './Component.jsx/Abt';
@@ -9,9 +9,20 @@ import Signin from './Pages/Signin';
 import Signup from './Pages/Signup';
 import Fav from './Pages/Fav';   
 import Cart from './Pages/Cart'; 
-import PaymentPage from './Pages/PaymentPage'; // Import your new isolated payment component
+import PaymentPage from './Pages/PaymentPage'; 
 
-// A small internal helper component to handle the clean redirect action via React Router hooks
+// A Guard wrapper that checks authentication. If signed out, captures intent state!
+const ProtectedRoute = ({ user, children }) => {
+  const location = useLocation();
+
+  if (!user) {
+    // Redirect to signin, saving the exact page they attempted to look at in window history state
+    return <Navigate to="/signin" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+
 const CartWithNavigation = ({ cartItems, onRemoveFromCart, onClearCart, setCheckoutTotal }) => {
   const navigate = useNavigate();
   
@@ -21,57 +32,48 @@ const CartWithNavigation = ({ cartItems, onRemoveFromCart, onClearCart, setCheck
       onRemoveFromCart={onRemoveFromCart} 
       onClearCart={onClearCart} 
       onNavigateToPayment={(totalAmount) => {
-        setCheckoutTotal(totalAmount); // Pass calculated sum up to app state
-        navigate('/payment');         // Push user to the isolated payment page
+        setCheckoutTotal(totalAmount); 
+        navigate('/payment');         
       }}
     />
   );
 };
 
-// MODIFIED REMOVED AUTOMATIC HOME NAVIGATION FORCING
 const PaymentPageWithNavigation = ({ totalAmount, itemCount, onClearCart }) => {
   return (
     <PaymentPage 
       totalAmount={totalAmount}
       itemCount={itemCount}
       onPaymentComplete={() => {
-        onClearCart();  // Clears items out of state and local storage safely
-        // The automatic navigate('/') line was deleted here so you remain on this screen!
+        onClearCart();  
       }}
     />
   );
 };
 
 function App() {
-  // Load user data from localStorage if it exists
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('activeUser');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  // Persistent Cart state initialization
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('cartItems');
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
-  // Persistent Favorites state initialization
   const [favorites, setFavorites] = useState(() => {
     const savedFavs = localStorage.getItem('favoriteItems');
     return savedFavs ? JSON.parse(savedFavs) : [];
   });
 
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // Temporary bridge state to move the sum string from Cart to PaymentPage safely
-  const [checkoutTotal, setCheckoutTotal] = useState('$0');
+  const [checkoutTotal, setCheckoutTotal] = useState('₦0');
 
-  // Sync Cart changes to local storage instantly
   useEffect(() => {
     localStorage.setItem('cartItems', JSON.stringify(cart));
   }, [cart]);
 
-  // Sync Favorites changes to local storage instantly
   useEffect(() => {
     localStorage.setItem('favoriteItems', JSON.stringify(favorites));
   }, [favorites]);
@@ -90,6 +92,7 @@ function App() {
     setFavorites([]);
   };
 
+  // Safe checks: If user is missing, programmatically triggers alert or manual redirect fallback link inside components
   const addToCart = (item) => {
     setCart((prevCart) => {
       if (prevCart.find((cartItem) => cartItem.id === item.id)) return prevCart;
@@ -101,7 +104,6 @@ function App() {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
-  // Hard reset cart state and wipe clear local storage instantly
   const clearCart = () => {
     setCart([]);
     localStorage.setItem('cartItems', JSON.stringify([])); 
@@ -133,10 +135,12 @@ function App() {
           
           <Routes>
             <Route path="/" element={<Home />} />
+            
             <Route 
               path="/services" 
               element={
                 <Service 
+                  user={user} // Passed to check authorization inside cards before processing cart add
                   searchQuery={searchQuery} 
                   cartItems={cart}
                   favoriteItems={favorites}
@@ -147,40 +151,46 @@ function App() {
               } 
             />
             
-            {/* FAVORITES ROUTE */}
+            {/* PROTECTED FAVORITES ROUTE */}
             <Route 
               path="/favorites" 
               element={
-                <Fav 
-                  favoriteItems={favorites} 
-                  onToggleFavorite={toggleFavorite} 
-                  onAddToCart={addToCart} 
-                />
+                <ProtectedRoute user={user}>
+                  <Fav 
+                    favoriteItems={favorites} 
+                    onToggleFavorite={toggleFavorite} 
+                    onAddToCart={addToCart} 
+                  />
+                </ProtectedRoute>
               } 
             />
             
-            {/* UPDATED CART ROUTE WITH PAY ROUTING TRIGGER */}
+            {/* PROTECTED CART ROUTE */}
             <Route 
               path="/cart" 
               element={
-                <CartWithNavigation 
-                  cartItems={cart} 
-                  onRemoveFromCart={removeFromCart} 
-                  onClearCart={clearCart} 
-                  setCheckoutTotal={setCheckoutTotal}
-                />
+                <ProtectedRoute user={user}>
+                  <CartWithNavigation 
+                    cartItems={cart} 
+                    onRemoveFromCart={removeFromCart} 
+                    onClearCart={clearCart} 
+                    setCheckoutTotal={setCheckoutTotal}
+                  />
+                </ProtectedRoute>
               } 
             />
 
-            {/* NEW ENTIRELY ISOLATED PAYMENT PAGE ROUTE */}
+            {/* PROTECTED PAYMENT ROUTE */}
             <Route 
               path="/payment" 
               element={
-                <PaymentPageWithNavigation 
-                  totalAmount={checkoutTotal}
-                  itemCount={cart.length}
-                  onClearCart={clearCart}
-                />
+                <ProtectedRoute user={user}>
+                  <PaymentPageWithNavigation 
+                    totalAmount={checkoutTotal}
+                    itemCount={cart.length}
+                    onClearCart={clearCart}
+                  />
+                </ProtectedRoute>
               } 
             />
             
