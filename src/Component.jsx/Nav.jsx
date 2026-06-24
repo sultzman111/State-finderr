@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount }) => {
+const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteCount }) => {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -105,16 +105,27 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount }) => {
                   </button>
                 </div>
 
-                {/* FAVORITES */}
-                <button className="flex flex-col items-center gap-1 text-xs font-semibold hover:text-blue-600 transition-colors cursor-pointer group">
-                  <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                {/* FAVORITES BUTTON */}
+                <button 
+                  onClick={() => navigate('/favorites')}
+                  className="flex flex-col items-center gap-1 text-xs font-semibold hover:text-blue-600 transition-colors cursor-pointer group relative"
+                >
+                  {favoriteCount > 0 && (
+                    <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                      {favoriteCount}
+                    </span>
+                  )}
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                   Favorites
                 </button>
 
-                {/* CART */}
-                <button className="flex flex-col items-center gap-1 text-xs font-semibold hover:text-blue-600 transition-colors cursor-pointer group relative">
+                {/* CART BUTTON */}
+                <button 
+                  onClick={() => navigate('/cart')}
+                  className="flex flex-col items-center gap-1 text-xs font-semibold hover:text-blue-600 transition-colors cursor-pointer group relative"
+                >
                   {cartCount > 0 && (
                     <span className="absolute -top-1.5 -right-2 bg-blue-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce">
                       {cartCount}
@@ -130,10 +141,22 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount }) => {
             )}
           </div>
 
-          {/* RIGHT SIDE: PROFILE DRILLDOWN DROPDOWN */}
+          {/* RIGHT SIDE: PROFILE DRILLDOWN DROPDOWN & TRANSACTION HISTORY BUTTON */}
           <div className="flex items-center gap-4">
             {user ? (
-              <div className="flex items-center gap-3 relative">
+              <div className="flex items-center gap-4 relative">
+                
+                {/* --- ADDED: TRANSACTION HISTORY BUTTON (LINKS TO THE PAYMENT PAGE) --- */}
+                <button 
+                  onClick={() => navigate('/payment')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-100 bg-gray-50/50 hover:bg-blue-50 hover:border-blue-100 text-xs font-bold text-gray-600 hover:text-blue-600 transition-all cursor-pointer group"
+                >
+                  <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                  <span>History</span>
+                </button>
+
                 <span className="hidden sm:inline text-sm font-medium text-gray-600">
                   Welcome, <strong className="text-gray-900">{user.firstName || user.Name || 'User'}</strong> 👋
                 </span>

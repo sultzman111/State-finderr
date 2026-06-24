@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '../firebase'; // Import your firebase initialization configuration
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     firstName: '',
     surname: '',
-    identifier: '', 
+    identifier: '', // This serves as the Email field for Firebase Authentication
     dob: '',
     password: '', 
   });
@@ -19,37 +23,54 @@ const Signup = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Saving User Data locally: ", formData);
-    
-    // ----------------------------------------------------------------
-    // SAVING TO LOCALSTORAGE (Connects this page directly to your Signin page!)
-    // ----------------------------------------------------------------
-    // 1. Get existing registered users array, or fallback to an empty array if empty
-    const existingUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-    
-    // 2. Check if this identifier/email is already taken
-    const userExists = existingUsers.some(user => user.identifier.toLowerCase() === formData.identifier.toLowerCase());
-    
-    if (userExists) {
-      alert("An account with this email/phone already exists!");
-      return;
-    }
+    setError('');
+    setLoading(true);
 
-    // 3. Add the new user data to our array lists
-    existingUsers.push({
-      ...formData,
-      identifier: formData.identifier.toLowerCase() // Normalizing case
-    });
-    
-    // 4. Save back to localStorage
-    localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
-    // ----------------------------------------------------------------
-    
-    // Redirect straight to dashboard page on success or login page
-    alert("Account created successfully!");
-    navigate('/dashboard');
+    try {
+      // 1. Create the authenticated user container in your Firebase Dashboard
+      const userCredential = await createUserWithEmailAndPassword(
+        auth, 
+        formData.identifier.trim(), 
+        formData.password
+      );
+
+      // 2. Attach the user's first name to their Firebase Profile metadata display details
+      await updateProfile(userCredential.user, {
+        displayName: formData.firstName.trim()
+      });
+
+      // 3. Optional: Store additional structural records like DoB locally if needed
+      const metadataProfile = {
+        firstName: formData.firstName,
+        surname: formData.surname,
+        dob: formData.dob
+      };
+      localStorage.setItem('user_metadata', JSON.stringify(metadataProfile));
+
+      setLoading(false);
+      alert("Account created successfully with Firebase Auth!");
+      navigate('/'); // Routes smoothly directly home where your App.jsx layout listener triggers
+    } catch (err) {
+      setLoading(false);
+      console.error("Firebase registration failure code: ", err.code);
+      
+      // Clean up messy developer logs into clean client statements
+      switch (err.code) {
+        case 'auth/email-already-in-use':
+          setError('An account with this email already exists!');
+          break;
+        case 'auth/invalid-email':
+          setError('Please provide a valid email format.');
+          break;
+        case 'auth/weak-password':
+          setError('Password must be at least 6 characters long.');
+          break;
+        default:
+          setError(err.message);
+      }
+    }
   };
 
   return (
@@ -112,6 +133,13 @@ const Signup = () => {
             <p className="text-sm text-gray-500">Get started today by filling in your basic info.</p>
           </div>
 
+          {/* Error Banner System Hook */}
+          {error && (
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-xs font-medium break-words">
+              ⚠️ {error}
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             
@@ -147,18 +175,18 @@ const Signup = () => {
               </div>
             </div>
 
-            {/* Phone Number or Email */}
+            {/* Email Identification Input */}
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
-                Phone Number or Email
+                Email Address
               </label>
               <input 
-                type="text" 
+                type="email" 
                 name="identifier"
                 value={formData.identifier}
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-sm" 
-                placeholder="name@example.com or phone" 
+                placeholder="name@example.com" 
                 required
               />
             </div>
@@ -207,9 +235,10 @@ const Signup = () => {
             {/* Submit Button */}
             <button 
               type="submit" 
-              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 px-4 rounded-xl shadow-sm transition-all duration-150 active:scale-[0.99] cursor-pointer"
+              disabled={loading}
+              className={`w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 px-4 rounded-xl shadow-sm transition-all duration-150 active:scale-[0.99] cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Sign Up
+              {loading ? "Verifying..." : "Sign Up"}
             </button>
           </form>
 

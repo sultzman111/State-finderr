@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase'; // Connects directly to your Firebase configuration file
 
 // 1. ADD onLogin HERE AS A COMPONENT PROP
 const Signin = ({ onLogin }) => {
@@ -24,29 +26,22 @@ const Signin = ({ onLogin }) => {
       await new Promise((resolve) => setTimeout(resolve, 600)); 
 
       // ----------------------------------------------------------------
-      // READ FROM LOCALSTORAGE (Matches what Signup.jsx saves!)
+      // LIVE FIREBASE AUTHENTICATION (Replaces your localDb check)
       // ----------------------------------------------------------------
-      const localDb = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-
-      // Look for a user where both the email/phone AND password match perfectly
-      const accountExists = localDb.find(
-        (user) => 
-          user.identifier.toLowerCase() === identifier.toLowerCase() && 
-          user.password === password
+      const userCredential = await signInWithEmailAndPassword(
+        auth, 
+        identifier.trim().toLowerCase(), 
+        password
       );
-
-      if (!accountExists) {
-        // Blocks entry if the user isn't found in localStorage
-        throw new Error("Invalid credentials. Account not found or wrong password.");
-      }
+      const firebaseUser = userCredential.user;
       // ----------------------------------------------------------------
 
       // 2. ADD THIS LOGIC RIGHT HERE: Pass the matched account object into your state framework
       if (onLogin) {
         onLogin({
-          firstName: accountExists.firstName || "Kareem", // Pulls dynamically from signup records
-          lastName: accountExists.lastName || "Alameen",
-          email: accountExists.identifier
+          firstName: firebaseUser.displayName || "Kareem", // Pulls dynamically from signup records
+          lastName: "Alameen",
+          email: firebaseUser.email
         });
       }
 
@@ -54,7 +49,16 @@ const Signin = ({ onLogin }) => {
       navigate('/services');
 
     } catch (err) {
-      setError(err.message || "Something went wrong.");
+      console.error("Firebase Signin error context code:", err.code);
+      if (
+        err.code === 'auth/user-not-found' || 
+        err.code === 'auth/wrong-password' || 
+        err.code === 'auth/invalid-credential'
+      ) {
+        setError("Invalid credentials. Account not found or wrong password.");
+      } else {
+        setError(err.message || "Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }
