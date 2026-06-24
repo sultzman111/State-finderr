@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Home = () => {
+// FIXED: Destructured 'user' from props here
+const Home = ({ user }) => {
   // Localized Nigerian sample property recommendations matching your service array structures
   const recommendedOffers = [
     { id: 1, title: 'Premium 3-Bedroom Serviced Apartment', price: '₦8,500,000/yr', location: 'Ikoyi, Lagos', beds: 3, baths: 3.5 },
@@ -33,8 +34,24 @@ const Home = () => {
                 Discover curated residential properties, premium state listings, and commercial developments across major Nigerian locations. Simple, clean, verified infrastructure.
               </p>
               <div className="flex items-center gap-4 pt-4">
-                {/* Fixed path navigation pointer to service marketplace portfolio directly */}
-                <Link to="/Service" className="bg-emerald-600 text-white text-sm font-semibold px-6 py-3 rounded-xl shadow-md hover:bg-emerald-700 transition-all active:scale-[0.98]">Get Started</Link>
+                
+                {/* FIXED CONDITION: Swaps buttons seamlessly depending on login session */}
+                {!user ? (
+                  <Link 
+                    to="/signin" 
+                    className="bg-emerald-600 text-white text-sm font-semibold px-6 py-3 rounded-xl shadow-md hover:bg-emerald-700 transition-all active:scale-[0.98]"
+                  >
+                    Get Started
+                  </Link>
+                ) : (
+                  <Link 
+                    to="/about" 
+                    className="bg-emerald-600 text-white text-sm font-semibold px-6 py-3 rounded-xl shadow-md hover:bg-emerald-700 transition-all active:scale-[0.98]"
+                  >
+                    More About Us
+                  </Link>
+                )}
+
                 <a href="#offers" className="text-sm font-medium text-white border border-neutral-700 bg-neutral-800/40 hover:bg-neutral-800 px-6 py-3 rounded-xl transition-all">Explore Offers</a>
               </div>
             </div>
@@ -54,7 +71,6 @@ const Home = () => {
             <h2 className="text-2xl font-black tracking-tight text-neutral-900">Our top recommended offers</h2>
             <p className="text-sm text-neutral-500 mt-1">Handpicked properties verified by global estate experts.</p>
           </div>
-          {/* LINK ROUTE MODIFIED: Clicking this takes the user cleanly to the Service component route */}
           <Link to="/Service" className="text-sm font-bold text-emerald-700 hover:text-emerald-600 transition-colors hidden sm:block">
             View all properties &rarr;
           </Link>
@@ -104,7 +120,6 @@ const Home = () => {
               Founded with the vision to bridge transparency and structural security, our network has grown into a world-renowned infrastructure portal. We connect independent brokers and verified clients to simplify property management, outright acquisitions, and shortlet rentals within Nigeria.
             </p>
             <div className="pt-2">
-              {/* LINK ROUTE MODIFIED: Clicking this takes the user cleanly to the About page location */}
               <Link 
                 to="/About" 
                 className="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 hover:text-emerald-600 group transition-colors"

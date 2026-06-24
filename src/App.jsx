@@ -134,13 +134,14 @@ function App() {
           />
           
           <Routes>
-            <Route path="/" element={<Home />} />
+            {/* FIXED LINE BELOW: Passed the user prop into Home so it can toggle between "Get Started" and "More About Us" */}
+            <Route path="/" element={<Home user={user} />} />
             
             <Route 
               path="/services" 
               element={
                 <Service 
-                  user={user} // Passed to check authorization inside cards before processing cart add
+                  user={user} 
                   searchQuery={searchQuery} 
                   cartItems={cart}
                   favoriteItems={favorites}
@@ -159,7 +160,7 @@ function App() {
                   <Fav 
                     favoriteItems={favorites} 
                     onToggleFavorite={toggleFavorite} 
-                    onAddToCart={addToCart} 
+                    onAddToCart={addToCart}
                   />
                 </ProtectedRoute>
               } 
@@ -196,7 +197,7 @@ function App() {
             
             <Route path="/about" element={<Abt />} />
             <Route path="/signin" element={<Signin onLogin={handleLogin} />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/signup" element={<Signup onLogin={handleLogin} />} />
           </Routes>
         </div>
         <Footer />

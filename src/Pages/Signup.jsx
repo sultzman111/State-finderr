@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase'; // Import your firebase initialization configuration
 
-const Signup = () => {
+// ADDED: onLogin prop destructured here to handle auto-login sessions
+const Signup = ({ onLogin }) => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    loading || setLoading(true);
 
     try {
       // 1. Create the authenticated user container in your Firebase Dashboard
@@ -41,16 +42,27 @@ const Signup = () => {
         displayName: formData.firstName.trim()
       });
 
-      // 3. Optional: Store additional structural records like DoB locally if needed
+      // 3. Store additional structural records like DoB locally if needed
       const metadataProfile = {
-        firstName: formData.firstName,
-        surname: formData.surname,
-        dob: formData.dob
+        firstName: formData.firstName.trim(),
+        surname: formData.surname.trim(),
+        dob: formData.dob,
+        email: formData.identifier.trim()
       };
       localStorage.setItem('user_metadata', JSON.stringify(metadataProfile));
 
+      // 4. FIX: Instantly sync session to App state so the user is logged in automatically
+      if (onLogin) {
+        onLogin({
+          firstName: formData.firstName.trim(),
+          Name: `${formData.firstName.trim()} ${formData.surname.trim()}`,
+          email: formData.identifier.trim(),
+          ...metadataProfile
+        });
+      }
+
       setLoading(false);
-      alert("Account created successfully with Firebase Auth!");
+      alert("Account created and signed in successfully!");
       navigate('/'); // Routes smoothly directly home where your App.jsx layout listener triggers
     } catch (err) {
       setLoading(false);
