@@ -54,7 +54,7 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteC
           {/* LEFT: BRAND LOGO */}
           <div className="flex-shrink-0">
             <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-black tracking-tight text-neutral-900">
-              ACME<span className="text-emerald-600">.</span>
+              S-CUBE<span className="text-emerald-600">.</span>
             </Link>
           </div>
 

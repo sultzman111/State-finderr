@@ -97,7 +97,7 @@ const Signup = ({ onLogin }) => {
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-md">
             <div className="w-4 h-4 bg-blue-600 rounded-sm transform rotate-45"></div>
           </div>
-          <span className="font-bold text-xl tracking-tight">Acme Inc</span>
+          <span className="font-bold text-xl tracking-tight">S-CUBE Inc</span>
         </div>
 
         {/* Middle: Brand Copy */}
@@ -123,7 +123,7 @@ const Signup = ({ onLogin }) => {
 
         {/* Bottom: Copyright */}
         <div className="relative z-10 text-sm text-blue-200">
-          &copy; 2026 Acme Inc. All rights reserved.
+          &copy; 2026 S-CUBE Inc. All rights reserved.
         </div>
       </div>
 
@@ -136,7 +136,7 @@ const Signup = ({ onLogin }) => {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
             </div>
-            <span className="font-bold text-xl tracking-tight text-gray-900">Acme Inc</span>
+            <span className="font-bold text-xl tracking-tight text-gray-900">S-CUBE Inc</span>
           </div>
 
           {/* Header */}
