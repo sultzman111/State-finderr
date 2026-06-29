@@ -54,7 +54,7 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteC
           {/* LEFT: BRAND LOGO */}
           <div className="flex-shrink-0">
             <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-black tracking-tight text-neutral-900">
-              RENTNEST<span className="text-emerald-600">.</span>
+              Rent<span className="text-emerald-600">.</span>
             </Link>
           </div>
 
@@ -104,6 +104,35 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteC
                   About
                 </button>
 
+                {/* SHOW ADD PROPERTY & MY LISTENING IF USER IS A SELLER */}
+                {user.role === 'seller' && (
+                  <>
+                    {/* ADD PROPERTY BUTTON */}
+                    <button 
+                      type="button"
+                      onClick={() => navigate('/AddProperty')}
+                      className="flex flex-col items-center gap-1 text-[11px] font-bold hover:text-emerald-700 transition-colors cursor-pointer group"
+                    >
+                      <svg className="w-5 h-5 text-neutral-400 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add Property
+                    </button>
+
+                    {/* MY LISTENING BUTTON */}
+                    <button 
+                      type="button"
+                      onClick={() => navigate('/mylistening')}
+                      className="flex flex-col items-center gap-1 text-[11px] font-bold hover:text-emerald-700 transition-colors cursor-pointer group"
+                    >
+                      <svg className="w-5 h-5 text-neutral-400 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      My Listening
+                    </button>
+                  </>
+                )}
+
                 {/* SEARCH FEATURE */}
                 <div className="flex items-center gap-2 relative">
                   {isSearchOpen && (
@@ -130,39 +159,44 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteC
                   </button>
                 </div>
 
-                {/* FAVORITES BUTTON */}
-                <button 
-                  type="button"
-                  onClick={() => navigate('/favorites')}
-                  className="flex flex-col items-center gap-1 text-[11px] font-bold hover:text-emerald-700 transition-colors cursor-pointer group relative"
-                >
-                  {favoriteCount > 0 && (
-                    <span className="absolute -top-1 -right-2 bg-rose-500 text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
-                      {favoriteCount}
-                    </span>
-                  )}
-                  <svg className="w-5 h-5 text-neutral-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                  Favorites
-                </button>
+                {/* ONLY SHOW FAVORITES AND CART IF NOT A SELLER */}
+                {user.role !== 'seller' && (
+                  <>
+                    {/* FAVORITES BUTTON */}
+                    <button 
+                      type="button"
+                      onClick={() => navigate('/favorites')}
+                      className="flex flex-col items-center gap-1 text-[11px] font-bold hover:text-emerald-700 transition-colors cursor-pointer group relative"
+                    >
+                      {favoriteCount > 0 && (
+                        <span className="absolute -top-1 -right-2 bg-rose-500 text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
+                          {favoriteCount}
+                        </span>
+                      )}
+                      <svg className="w-5 h-5 text-neutral-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      Favorites
+                    </button>
 
-                {/* CART BUTTON */}
-                <button 
-                  type="button"
-                  onClick={() => navigate('/cart')}
-                  className="flex flex-col items-center gap-1 text-[11px] font-bold hover:text-emerald-700 transition-colors cursor-pointer group relative"
-                >
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-2 bg-emerald-600 text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
-                      {cartCount}
-                    </span>
-                  )}
-                  <svg className="w-5 h-5 text-neutral-400 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  Cart
-                </button>
+                    {/* CART BUTTON */}
+                    <button 
+                      type="button"
+                      onClick={() => navigate('/cart')}
+                      className="flex flex-col items-center gap-1 text-[11px] font-bold hover:text-emerald-700 transition-colors cursor-pointer group relative"
+                    >
+                      {cartCount > 0 && (
+                        <span className="absolute -top-1 -right-2 bg-emerald-600 text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
+                          {cartCount}
+                        </span>
+                      )}
+                      <svg className="w-5 h-5 text-neutral-400 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      Cart
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -188,7 +222,7 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteC
                   Welcome, <strong className="text-neutral-900 font-extrabold">{user.firstName || user.Name || 'User'}</strong> 👋
                 </span>
                 
-                {/* Profile Trigger Button (Desktop dropdown focus click) */}
+                {/* Profile Trigger Button */}
                 <button 
                   type="button"
                   onMouseDown={(e) => {
@@ -255,7 +289,6 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteC
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-neutral-100 px-6 py-4 space-y-4 shadow-xl animate-fadeIn">
           
-          {/* Active User Sub-Bar */}
           {user && (
             <div className="bg-neutral-50 rounded-xl p-3 border border-neutral-200/60 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-neutral-900 text-white font-black text-xs flex items-center justify-center">
@@ -270,7 +303,6 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteC
             </div>
           )}
 
-          {/* Search Bar directly inline for mobile view */}
           <div className="relative">
             <input 
               type="text"
@@ -284,7 +316,6 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteC
             />
           </div>
 
-          {/* Nav Tab Options stacked in a dynamic Column layout structure */}
           <div className="flex flex-col space-y-1">
             <button 
               type="button"
@@ -310,22 +341,48 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteC
 
             {user && (
               <>
-                <button 
-                  type="button"
-                  onClick={() => handleMobileNav('/favorites')}
-                  className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-neutral-600 hover:bg-neutral-50 hover:text-rose-600 transition-all flex items-center justify-between"
-                >
-                  <span>❤️ Saved Favorites</span>
-                  {favoriteCount > 0 && <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black">{favoriteCount}</span>}
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => handleMobileNav('/cart')}
-                  className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-neutral-600 hover:bg-neutral-50 hover:text-emerald-700 transition-all flex items-center justify-between"
-                >
-                  <span>🛒 Checkout Cart</span>
-                  {cartCount > 0 && <span className="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded-full font-black">{cartCount}</span>}
-                </button>
+                {/* SELLER SPECIFIC MOBILE BUTTONS */}
+                {user.role === 'seller' && (
+                  <>
+                    <button 
+                      type="button"
+                      onClick={() => handleMobileNav('/AddProperty')}
+                      className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-neutral-600 hover:bg-neutral-50 hover:text-emerald-700 transition-all"
+                    >
+                      ➕ Add Property Layout
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => handleMobileNav('/mylistening')}
+                      className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-neutral-600 hover:bg-neutral-50 hover:text-emerald-700 transition-all"
+                    >
+                      📋 View My Listening
+                    </button>
+                  </>
+                )}
+
+                {/* ONLY SHOW FAVORITES AND CART IF NOT A SELLER */}
+                {user.role !== 'seller' && (
+                  <>
+                    <button 
+                      type="button"
+                      onClick={() => handleMobileNav('/favorites')}
+                      className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-neutral-600 hover:bg-neutral-50 hover:text-rose-600 transition-all flex items-center justify-between"
+                    >
+                      <span>❤️ Saved Favorites</span>
+                      {favoriteCount > 0 && <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black">{favoriteCount}</span>}
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => handleMobileNav('/cart')}
+                      className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-neutral-600 hover:bg-neutral-50 hover:text-emerald-700 transition-all flex items-center justify-between"
+                    >
+                      <span>🛒 Checkout Cart</span>
+                      {cartCount > 0 && <span className="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded-full font-black">{cartCount}</span>}
+                    </button>
+                  </>
+                )}
+
                 <button 
                   type="button"
                   onClick={() => handleMobileNav('/payment')}
@@ -337,7 +394,6 @@ const Nav = ({ user, onLogout, searchQuery, setSearchQuery, cartCount, favoriteC
             )}
           </div>
 
-          {/* Action Footer Buttons for session handling inside mobile menu */}
           <div className="pt-2 border-t border-neutral-100">
             {user ? (
               <button

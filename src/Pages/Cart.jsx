@@ -1,124 +1,128 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const Cart = ({ cartItems = [], onRemoveFromCart, onClearCart, onNavigateToPayment }) => {
-  const [isInitializing, setIsInitializing] = useState(false);
+const Cart = ({ cartItems, onRemoveFromCart, onClearCart, onNavigateToPayment, transactions, user }) => {
+  // Calculate total price of items currently in the cart
+  const totalBasketValue = cartItems.reduce((acc, item) => acc + Number(item.basePrice), 0);
 
-  // Helper to cleanly format numbers into local Currency currency layout
-  const formatCurrency = (value) => {
-    return '₦' + value.toLocaleString('en-NG');
-  };
+  // Filter transactions to show ONLY history belonging to this logged-in buyer
+  const myHistory = transactions.filter((tx) => tx.buyerEmail === user?.email);
 
-  // Calculates total price dynamically using the multiplied property values
-  const calculateTotalRaw = () => {
-    return cartItems.reduce((accumulator, item) => {
-      if (!item) return accumulator;
-      // Use calculatedPrice if available from custom rental choice; fallback to basePrice
-      const targetPrice = item.calculatedPrice !== undefined ? item.calculatedPrice : (item.basePrice || 0);
-      return accumulator + targetPrice;
-    }, 0);
-  };
-
-  const handleCheckoutClick = () => {
-    if (isInitializing) return;
-    
-    setIsInitializing(true);
-
-    // Wait exactly 3 seconds before moving to the next route page
-    setTimeout(() => {
-      onNavigateToPayment(formatCurrency(calculateTotalRaw()));
-      setIsInitializing(false);
-    }, 3000);
-  };
-
-  // --- PROCESSING LOADING SCREEN OVERLAY ---
-  if (isInitializing) {
-    return (
-      <div className="min-h-screen bg-neutral-900 text-neutral-100 flex flex-col items-center justify-center font-sans">
-        <div className="text-center space-y-4 max-w-sm px-4 animate-pulse">
-          <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mx-auto"></div>
-          <h2 className="text-xl font-black text-white tracking-tight">Initializing Transaction...</h2>
-          <p className="text-neutral-400 text-xs leading-relaxed">
-            Securing safe local checkout gateways and compiling rental metadata matrix. Please wait.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // --- MAIN DISPLAY SURFACE ---
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-800 py-16 px-4 font-sans">
-      <div className="max-w-4xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 py-12 min-h-screen font-sans bg-white">
+      
+      {/* Page Title */}
+      <div className="mb-10 border-b border-gray-100 pb-5">
+        <h1 className="text-3xl font-black text-gray-950 tracking-tight">Buyer Dashboard</h1>
+        <p className="text-sm text-gray-500">Manage your current selections and view your order history.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-black text-neutral-900 tracking-tight">Your Portfolio Cart</h1>
-            <p className="text-neutral-500 text-sm mt-1">Review your selected properties and lease acquisitions.</p>
-          </div>
-          {cartItems.length > 0 && (
-            <button
-              onClick={onClearCart}
-              className="px-4 py-2 bg-rose-50 border border-rose-200 text-rose-600 font-bold text-xs rounded-xl hover:bg-rose-600 hover:text-white transition-all cursor-pointer"
-            >
-              Clear Entire Cart
-            </button>
+        {/* LEFT COLUMN: ACTIVE SHOPPING CART */}
+        <div className="lg:col-span-2 space-y-6">
+          <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Your Selections ({cartItems.length})</h2>
+          
+          {cartItems.length === 0 ? (
+            <div className="text-center py-16 bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
+              <p className="text-gray-400 text-sm">Your cart is empty. Browse properties to add them here.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {cartItems.map((item) => (
+                <div key={item.id} className="flex gap-4 p-4 border border-gray-100 rounded-2xl items-center justify-between bg-white shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded-xl" />
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-sm line-clamp-1">{item.title}</h3>
+                      <p className="text-xs text-gray-400">{item.location}</p>
+                      <p className="text-sm font-black text-gray-950 mt-1">₦{Number(item.basePrice).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onRemoveFromCart(item.id)}
+                    className="text-xs font-bold text-rose-600 hover:underline cursor-pointer px-3 py-1"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+
+              {/* Total Calculation Row */}
+              <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                <button onClick={onClearCart} className="text-xs text-gray-400 font-bold hover:text-gray-600 cursor-pointer">
+                  Clear All Items
+                </button>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400 font-medium">Total Price</p>
+                  <p className="text-xl font-black text-gray-950">₦{totalBasketValue.toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Broadcast Button */}
+              <button
+                onClick={() => onNavigateToPayment(totalBasketValue)}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-md cursor-pointer text-center block"
+              >
+                Broadcast Purchase Request to Network
+              </button>
+            </div>
           )}
         </div>
 
-        {cartItems.length === 0 ? (
-          <div className="text-center py-16 text-neutral-400 border border-dashed border-neutral-300 rounded-2xl bg-white shadow-sm">
-            🇳🇬 Your structural portfolio cart is empty.
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              {cartItems.map((item) => {
-                const currentItemPrice = item.calculatedPrice !== undefined ? item.calculatedPrice : item.basePrice;
-                
-                return (
-                  <div key={item.id} className="bg-white rounded-2xl p-6 border border-neutral-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.01)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-neutral-300 transition-all">
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-lg font-bold text-neutral-900">{item.title}</h3>
-                        {item.isRental && (
-                          <span className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase">
-                            Lease: {item.durationSelected || 1} Mos
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-neutral-400 mt-1.5 font-medium">📍 {item.location} • 🛌 {item.beds} Beds • 🛁 {item.baths} Baths</p>
-                    </div>
-                    <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                      <span className="text-xl font-black text-neutral-900 tracking-tight">
-                        {formatCurrency(currentItemPrice)}
-                      </span>
-                      <button
-                        onClick={() => onRemoveFromCart(item.id)}
-                        className="text-xs font-bold text-rose-500 hover:text-rose-700 transition-colors cursor-pointer px-2"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        {/* RIGHT COLUMN: PERMANENT PURCHASE HISTORY LOG */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Purchase History Ledger</h2>
+          <p className="text-xs text-gray-400 -mt-4">Real-time status updates from asset sellers.</p>
 
-            {/* OVERALL PORTFOLIO SUMMARY CARD */}
-            <div className="bg-white border border-neutral-200 rounded-2xl p-6 mt-8 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm">
-              <div>
-                <p className="text-xs text-emerald-700 font-bold uppercase tracking-wider">Acquisition Summary</p>
-                <p className="text-sm text-neutral-500 mt-0.5">Combined financial total for {cartItems.length} selected items.</p>
-              </div>
-              <button
-                onClick={handleCheckoutClick}
-                className="w-full sm:w-auto bg-neutral-900 hover:bg-emerald-700 text-white font-black text-xs px-6 py-4 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer text-center whitespace-nowrap uppercase tracking-wider"
-              >
-                Secure Portfolio: {formatCurrency(calculateTotalRaw())} →
-              </button>
+          {myHistory.length === 0 ? (
+            <div className="text-center py-16 bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
+              <p className="text-gray-400 text-sm">No transaction logs or past orders found.</p>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="space-y-3 max-h-[550px] overflow-y-auto pr-1">
+              {myHistory.map((tx) => (
+                <div 
+                  key={tx.txId} 
+                  className={`p-4 border rounded-2xl bg-white shadow-sm flex flex-col gap-2 transition-all duration-300 ${
+                    tx.status === 'SUCCESSFUL' ? 'border-emerald-200 bg-emerald-50/10' : 
+                    tx.status === 'UNSUCCESSFUL' ? 'border-rose-200 bg-rose-50/10' : 
+                    'border-gray-100'
+                  }`}
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-xs line-clamp-1">{tx.title}</h4>
+                      <span className="text-[9px] font-mono text-gray-400 block mt-0.5">ID: {tx.txId.substring(0, 8)}...</span>
+                    </div>
+                    
+                    {/* DYNAMIC LIVE BADGES CHANGES INSTANTLY */}
+                    {tx.status === 'PENDING' && (
+                      <span className="text-[10px] font-bold px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-200 rounded-full animate-pulse whitespace-nowrap">
+                        Pending ⏳
+                      </span>
+                    )}
+                    {tx.status === 'SUCCESSFUL' && (
+                      <span className="text-[10px] font-bold px-2.5 py-1 bg-emerald-600 text-white rounded-full shadow-sm whitespace-nowrap">
+                        Successful ✅
+                      </span>
+                    )}
+                    {tx.status === 'UNSUCCESSFUL' && (
+                      <span className="text-[10px] font-bold px-2.5 py-1 bg-rose-600 text-white rounded-full shadow-sm whitespace-nowrap">
+                        Unsuccessful ❌
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-50 text-[11px]">
+                    <span className="text-gray-400 truncate max-w-[120px]">Seller: {tx.sellerId}</span>
+                    <span className="text-sm font-black text-gray-950">₦{Number(tx.price).toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

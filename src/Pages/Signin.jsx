@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase'; // Connects directly to your Firebase configuration file
 
-// 1. ADD onLogin HERE AS A COMPONENT PROP
 const Signin = ({ onLogin }) => {
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   
+  // --- ROLE SWITCH STATE ---
+  const [role, setRole] = useState('buyer'); // Defaults to buyer access
+
   // States for Security, Loading, & UX
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(''); 
@@ -17,16 +19,16 @@ const Signin = ({ onLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); 
-    setLoading(true);
+    loading || setLoading(true);
 
     try {
-      console.log("Attempting login for:", { identifier, password });
+      console.log("Attempting login for:", { identifier, password, role });
 
       // Add a small delay to simulate network response time
       await new Promise((resolve) => setTimeout(resolve, 600)); 
 
       // ----------------------------------------------------------------
-      // LIVE FIREBASE AUTHENTICATION (Replaces your localDb check)
+      // LIVE FIREBASE AUTHENTICATION 
       // ----------------------------------------------------------------
       const userCredential = await signInWithEmailAndPassword(
         auth, 
@@ -36,17 +38,23 @@ const Signin = ({ onLogin }) => {
       const firebaseUser = userCredential.user;
       // ----------------------------------------------------------------
 
-      // 2. ADD THIS LOGIC RIGHT HERE: Pass the matched account object into your state framework
+      // Pass the selected account role straight down into your state architecture
       if (onLogin) {
         onLogin({
-          firstName: firebaseUser.displayName || "Kareem", // Pulls dynamically from signup records
+          firstName: firebaseUser.displayName || "Kareem", 
           lastName: "Alameen",
-          email: firebaseUser.email
+          email: firebaseUser.email,
+          role: role // ⚡ CRITICAL: Maps 'buyer' or 'seller' to activate Route Protection
         });
       }
 
-      // SUCCESS: Route them directly to the portfolio grid view!
-      navigate('/services');
+      // SUCCESS ROUTING: 
+      // If they are a seller, send them to their dashboard list; if buyer, send to marketplace
+      if (role === 'seller') {
+        navigate('/mylistening');
+      } else {
+        navigate('/services');
+      }
 
     } catch (err) {
       console.error("Firebase Signin error context code:", err.code);
@@ -135,6 +143,40 @@ const Signin = ({ onLogin }) => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+            
+            {/* ⚡ NEW: IDENTITY ROLE INTENT SELECTOR */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                Sign In As
+              </label>
+              <div className="grid grid-cols-2 gap-2 bg-gray-50 p-1 border border-gray-200 rounded-xl h-[46px] items-center">
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => setRole('buyer')}
+                  className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    role === 'buyer' 
+                      ? 'bg-blue-600 text-white shadow-sm' 
+                      : 'text-gray-500 hover:text-gray-900'
+                  }`}
+                >
+                  Property Buyer
+                </button>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => setRole('seller')}
+                  className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    role === 'seller' 
+                      ? 'bg-blue-600 text-white shadow-sm' 
+                      : 'text-gray-500 hover:text-gray-900'
+                  }`}
+                >
+                  Asset Seller
+                </button>
+              </div>
+            </div>
+
             {/* Email or Phone */}
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
@@ -196,7 +238,7 @@ const Signin = ({ onLogin }) => {
                   Verifying...
                 </>
               ) : (
-                "Sign In"
+                `Sign In as ${role === 'seller' ? 'Seller' : 'Buyer'}`
               )}
             </button>
           </form>

@@ -1,145 +1,108 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-const PaymentPage = ({ totalAmount = "$0", itemCount = 0, onPaymentComplete }) => {
-  const [transactions, setTransactions] = useState(() => {
-    const savedTx = localStorage.getItem('acme_ledger_records');
-    return savedTx ? JSON.parse(savedTx) : [];
-  });
+const PaymentPage = ({ transactions, user }) => {
+  // Filter transactions to show ONLY history belonging to this logged-in buyer
+  const myHistory = transactions.filter((tx) => tx.buyerEmail === user?.email);
 
-  // Create a new record that drops directly into 'pending' with no secondary load states
-  useEffect(() => {
-    if (totalAmount !== "$0" && itemCount > 0) {
-      const isDuplicate = transactions.some(
-        tx => tx.amount === totalAmount && (Date.now() - tx.timestamp) < 2000
-      );
-
-      if (!isDuplicate) {
-        const newTransaction = {
-          id: `TX-ACME-${Math.floor(100000 + Math.random() * 900000)}`,
-          amount: totalAmount,
-          items: itemCount,
-          timestamp: Date.now(),
-          stage: 'pending' // Enters with pending status straight away
-        };
-        
-        const updatedList = [newTransaction, ...transactions];
-        setTransactions(updatedList);
-        localStorage.setItem('acme_ledger_records', JSON.stringify(updatedList));
-
-        // Wipe the temporary transfer props in App.jsx so refreshes don't re-trigger imports
-        if (onPaymentComplete) {
-          onPaymentComplete();
-        }
-      }
-    }
-  }, [totalAmount, itemCount]);
-
-  // Track the exact 5-minute (300 seconds) countdown countdown
-  useEffect(() => {
-    const timerInterval = setInterval(() => {
-      let changeDetected = false;
-      
-      const advancedTransactions = transactions.map((tx) => {
-        const elapsedSeconds = Math.floor((Date.now() - tx.timestamp) / 1000);
-        
-        let targetStage = tx.stage;
-        if (elapsedSeconds >= 300) {
-          targetStage = 'successful';
-        }
-
-        if (tx.stage !== targetStage) {
-          changeDetected = true;
-          return { ...tx, stage: targetStage };
-        }
-        return tx;
-      });
-
-      if (changeDetected) {
-        setTransactions(advancedTransactions);
-        localStorage.setItem('acme_ledger_records', JSON.stringify(advancedTransactions));
-      }
-    }, 1000);
-
-    return () => clearInterval(timerInterval);
-  }, [transactions]);
-
-  const clearLedgerHistory = () => {
-    setTransactions([]);
-    localStorage.removeItem('acme_ledger_records');
-  };
+  // Grab the very latest transaction to show as the "Current Order" on top
+  const latestTx = myHistory[0]; 
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 py-16 px-4 font-sans">
-      <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4 py-12 min-h-screen font-sans bg-white">
+      
+      {/* SUCCESS CONFIRMATION HEADER */}
+      <div className="text-center mb-12 bg-blue-50/50 border border-blue-100 rounded-3xl p-8 shadow-sm">
+        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl shadow-md animate-bounce">
+          ✓
+        </div>
+        <h1 className="text-2xl font-black text-gray-950 tracking-tight">Request Broadcasted Successfully!</h1>
+        <p className="text-sm text-gray-500 mt-2 max-w-md mx-auto">
+          Your asset acquisition offer has been routed directly into the seller's secure dashboard stream. 
+        </p>
+        <div className="mt-6 flex justify-center gap-4">
+          <Link to="/services" className="text-xs font-bold bg-white border border-gray-200 px-4 py-2 rounded-xl text-gray-700 hover:bg-gray-50 shadow-sm transition-all">
+            ← Browse More Properties
+          </Link>
+        </div>
+      </div>
+
+      {/* TWO-COLUMN STATUS INTERFACE */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Transaction History</h1>
-            <p className="text-gray-500 text-xs mt-1">Review active pipeline verifications and completed structural allocations.</p>
-          </div>
-          {transactions.length > 0 && (
-            <button
-              onClick={clearLedgerHistory}
-              className="px-3 py-1.5 bg-gray-200/60 hover:bg-red-50 hover:text-red-600 border border-transparent hover:border-red-100 text-gray-600 text-xs font-bold rounded-xl transition-all cursor-pointer"
-            >
-              Clear Logs
-            </button>
+        {/* LEFT COLUMN: CURRENT BROADCAST ALERT (Takes 1 col) */}
+        <div className="space-y-4">
+          <h2 className="text-sm font-black text-gray-400 uppercase tracking-wider">Current Pipeline</h2>
+          
+          {latestTx ? (
+            <div className="border border-gray-200 rounded-2xl p-5 bg-white shadow-sm space-y-3">
+              <span className="text-[9px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold">LATEST BROADCAST</span>
+              <h3 className="font-extrabold text-gray-900 text-sm line-clamp-2">{latestTx.title}</h3>
+              <p className="text-lg font-black text-gray-950">₦{Number(latestTx.price).toLocaleString()}</p>
+              
+              <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                <span className="text-xs text-gray-400">Live Status:</span>
+                {latestTx.status === 'PENDING' && <span className="text-xs font-bold px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-200 rounded-full animate-pulse">Pending ⏳</span>}
+                {latestTx.status === 'SUCCESSFUL' && <span className="text-xs font-bold px-2.5 py-1 bg-emerald-600 text-white rounded-full shadow-md">Successful ✅</span>}
+                {latestTx.status === 'UNSUCCESSFUL' && <span className="text-xs font-bold px-2.5 py-1 bg-rose-600 text-white rounded-full shadow-md">Unsuccessful ❌</span>}
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400 italic">No active requests floating in network pipelines.</p>
           )}
         </div>
 
-        {transactions.length === 0 ? (
-          <div className="text-center py-16 text-gray-450 border border-dashed border-gray-200 rounded-2xl bg-white shadow-sm">
-            📄 No dynamic transactions recorded in current history ledger session.
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {transactions.map((tx) => {
-              const ageInSeconds = Math.floor((Date.now() - tx.timestamp) / 1000);
-              const remainingSeconds = Math.max(300 - ageInSeconds, 0);
-              const minutesLeft = Math.floor(remainingSeconds / 60);
-              const secondsLeft = remainingSeconds % 60;
+        {/* RIGHT COLUMN: PERMANENT PURCHASE HISTORY LEDGER (Takes 2 cols) */}
+        <div className="md:col-span-2 space-y-4">
+          <h2 className="text-sm font-black text-gray-400 uppercase tracking-wider">Your Historical Ledger ({myHistory.length})</h2>
 
-              return (
+          {myHistory.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
+              <p className="text-gray-400 text-xs">No recorded logs found under account: {user?.email}</p>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[450px] overflow-y-auto pr-1">
+              {myHistory.map((tx) => (
                 <div 
-                  key={tx.id} 
-                  className={`bg-white border rounded-2xl p-6 shadow-sm transition-all duration-300 ${
-                    tx.stage === 'successful' ? 'border-emerald-100 bg-emerald-50/10' : 'border-amber-100 bg-amber-50/5'
+                  key={tx.txId} 
+                  className={`p-4 border rounded-2xl bg-white shadow-sm flex items-center justify-between gap-4 transition-all duration-300 ${
+                    tx.status === 'SUCCESSFUL' ? 'border-emerald-200 bg-emerald-50/5 shadow-emerald-50/20' : 
+                    tx.status === 'UNSUCCESSFUL' ? 'border-rose-200 bg-rose-50/5 shadow-rose-50/20' : 
+                    'border-gray-100'
                   }`}
                 >
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-black text-gray-800">{tx.id}</span>
-                        <span className="text-gray-300 text-xs">•</span>
-                        <p className="text-xs font-medium text-gray-500">
-                          {new Date(tx.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </p>
-                      </div>
-                      <p className="text-sm font-bold text-gray-900 mt-1.5">
-                        Acquisition Payload: <span className="text-gray-600">{tx.items} Commodity Elements</span>
-                      </p>
-                    </div>
+                  <div className="space-y-1 w-2/3">
+                    <h4 className="font-extrabold text-gray-900 text-xs line-clamp-1">{tx.title}</h4>
+                    <p className="text-[10px] text-gray-400 truncate">Seller ID: {tx.sellerId}</p>
+                    <span className="text-[9px] font-mono text-gray-300 block">ID: {tx.txId}</span>
+                  </div>
 
-                    <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                      <span className="text-lg font-black text-gray-900">{tx.amount}</span>
-                      
-                      {tx.stage === 'pending' ? (
-                        <span className="px-3 py-1.5 text-[11px] font-black uppercase tracking-wider rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center gap-1.5 animate-pulse">
-                          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping"></span>
-                          Pending ({minutesLeft}m {secondsLeft}s)
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1.5 text-[11px] font-black uppercase tracking-wider rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center gap-1">
-                          ✓ Successful
-                        </span>
-                      )}
-                    </div>
+                  <div className="text-right space-y-2 flex flex-col items-end flex-shrink-0">
+                    <p className="text-sm font-black text-gray-950">₦{Number(tx.price).toLocaleString()}</p>
+                    
+                    {/* SELLER ACTION RESPONSE BADGES */}
+                    {tx.status === 'PENDING' && (
+                      <span className="text-[9px] font-extrabold px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-full animate-pulse">
+                        Awaiting Review ⏳
+                      </span>
+                    )}
+                    {tx.status === 'SUCCESSFUL' && (
+                      <span className="text-[9px] font-extrabold px-2 py-0.5 bg-emerald-600 text-white rounded-full shadow-sm">
+                        Successful ✅
+                      </span>
+                    )}
+                    {tx.status === 'UNSUCCESSFUL' && (
+                      <span className="text-[9px] font-extrabold px-2 py-0.5 bg-rose-600 text-white rounded-full shadow-sm">
+                        Unsuccessful ❌
+                      </span>
+                    )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
