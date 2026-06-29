@@ -14,7 +14,7 @@ const Footer = () => {
           {/* Column 1: Identity */}
           <div className="space-y-3">
             <Link to="/" className="text-xl font-black tracking-tight text-white block">
-              S-CUBE<span className="text-blue-600">.</span>
+              RENTNEST<span className="text-blue-600">.</span>
             </Link>
             <p className="text-xs text-slate-500 leading-relaxed font-light">
               Providing premium structural configurations and verified real estate assets built for modern reliability.
@@ -48,7 +48,7 @@ const Footer = () => {
               Have architectural questions? Reach out directly.
             </p>
             <span className="text-xs font-semibold text-blue-400 block">
-              support@s-cube-structural.com
+              support@Rentnest-structural.com
             </span>
           </div>
 
@@ -56,7 +56,7 @@ const Footer = () => {
 
         {/* BOTTOM METRIC: COPYRIGHT DISCLAIMER */}
         <div className="border-t border-slate-900/60 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>&copy; {currentYear} S-CUBE Inc. All structural rights reserved.</p>
+          <p>&copy; {currentYear} RENTNEST Inc. All structural rights reserved.</p>
           <div className="flex gap-4">
             <span className="cursor-pointer hover:text-blue-400 transition-colors">Twitter</span>
             <span className="cursor-pointer hover:text-blue-400 transition-colors">LinkedIn</span>
