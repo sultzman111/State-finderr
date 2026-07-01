@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { Link } from 'react-router-dom';
 // Make sure to accept the correct prop names coming from App.js
 const Service = ({ 
   user, 
@@ -105,9 +105,12 @@ const Service = ({
                       )}
                     </div>
                   ) : (
-                    <p className="mt-6 text-center text-xs text-gray-400 bg-gray-50 py-3 rounded-xl border border-dashed">
+                    <Link
+                      to="/signin"
+                      className="mt-6 text-center text-xs text-gray-400 bg-gray-50 py-3 rounded-xl border border-dashed"
+                    >
                       Please sign in to make an offer on this asset.
-                    </p>
+                    </Link>
                   )}
                 </div>
 

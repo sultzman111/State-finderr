@@ -15,15 +15,15 @@ const Home = ({ user }) => {
       {/* 1. HERO SECTION */}
       <div className="max-w-7xl mx-auto px-6 pt-12 pb-16">
         {/* FIXED: Added lg: prefix to min-h-[550px] to remove the empty mobile space */}
-        <div className="bg-neutral-900 rounded-3xl overflow-hidden shadow-xl lg:flex relative lg:min-h-[550px]">
+        <div className="bg-blue-700 rounded-3xl overflow-hidden shadow-xl lg:flex relative lg:min-h-[550px]">
           <div className="absolute inset-0 opacity-5 bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:32px_32px]"></div>
 
           <div className="relative z-10 lg:w-1/2 p-8 sm:p-12 lg:p-16 flex flex-col justify-between text-white">
             <div className="flex items-center gap-2 mb-8 lg:mb-0">
-              <div className="w-6 h-6 bg-emerald-600 rounded-md flex items-center justify-center">
+              <div className="w-6 h-6 bg-black rounded-md flex items-center justify-center">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
               </div>
-              <span className="text-xs font-bold tracking-widest uppercase text-emerald-400">Premium Estate Network</span>
+              <span className="text-xs font-bold tracking-widest uppercase text-white">Premium Estate Network</span>
             </div>
 
             <div className="my-auto max-w-md space-y-6">
@@ -45,7 +45,7 @@ const Home = ({ user }) => {
                 ) : (
                   <Link 
                     to="/services" 
-                    className="bg-emerald-600 text-white text-sm font-semibold px-6 py-3 rounded-xl shadow-md hover:bg-emerald-700 transition-all active:scale-[0.98]"
+                    className="bg-black text-white text-sm font-semibold px-6 py-3 rounded-xl shadow-md hover:bg-emerald-700 transition-all active:scale-[0.98]"
                   >
                     View Listings
                   </Link>
